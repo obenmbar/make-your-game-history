@@ -1,0 +1,106 @@
+/* 1. كنحيدو الهوامش ديال الصفحة كاملة */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 2. كنوسطو اللعبة فوسط الشاشة */
+body {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #222; /* لون كحل فالجناب */
+    font-family: Arial, sans-serif;
+}
+
+/* 3. التيران ديال اللعبة */
+#game-area {
+    width: 800px;
+    height: 600px;
+    position: relative; /* ضروري باش العناصر لداخل يتحركو بحرية */
+    background-color: #000;
+    
+    /* هنا دير سمية تصويرة الخلفية ديالك */
+    background-image: url('background.jpg'); 
+    background-size: cover;
+    border: 4px solid #fff;
+    overflow: hidden; /* باش الكرة مخرجش وتبين سكرول */
+}
+
+/* 4. السكور */
+#score-board {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 10; /* باش يجي فوق الخلفية */
+}
+
+/* 5. رسالة البداية */
+#start-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* كتجيبو فالوسط 100% */
+    color: white;
+    font-size: 30px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 20;
+}
+
+/* 6. البادل (المضرب) */
+#paddle {
+    width: 120px;
+    height: 20px;
+    background-color: #0f0; /* لون خضر يلا ماكانتش تصويرة */
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%); /* كيبدا فالوسط */
+    border-radius: 10px;
+
+    /* هنا دير سمية تصويرة البادل */
+    background-image: url('paddle.png');
+    background-size: cover;
+}
+
+/* 7. الكرة */
+#ball {
+    width: 20px;
+    height: 20px;
+    background-color: red; /* لون حمر يلا ماكانتش تصويرة */
+    border-radius: 50%; /* باش تولي مدورة */
+    position: absolute;
+    bottom: 40px; /* فوق البادل بشوية */
+    left: 50%;
+    transform: translateX(-50%);
+
+    /* هنا دير سمية تصويرة الكرة */
+    background-image: url('ball.png');
+    background-size: cover;
+}
+
+/* 8. صندوق الياجور */
+#bricks-container {
+    display: flex;
+    flex-wrap: wrap; /* باش يلا عمر السطر يهبط للسطر لاخور */
+    justify-content: center;
+    padding-top: 50px;
+    gap: 10px; /* المسافة بين الياجور */
+}
+
+/* 9. شكل الياجور (البريكة) */
+.brick {
+    width: 80px;
+    height: 30px;
+    background-color: orange;
+    border: 2px solid #fff;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
