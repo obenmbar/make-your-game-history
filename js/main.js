@@ -6,7 +6,9 @@ const brickcontainer = document.getElementById('bricks-container')
 const startmessege = document.getElementById('start-message')
 const scoredisplay = document.getElementById('score')
 
-const paddleSpeed = 30
+let rightPressed = false;
+let leftPressed = false;
+const paddleSpeed = 8
 let gameRunning = false
 let ballSpeedX = 4
 let ballSpeedY = -4
@@ -18,35 +20,21 @@ let startposition = (gamewidth - paddlewidth) / 2
 let currentX = startposition
 paddle.style.transform = `translateX(${startposition}px)`
 
-
 document.addEventListener('keydown', event => {
-
-
     if (event.key === 'ArrowRight') {
-        let position = currentX + paddleSpeed
-        currentX = position
-        if (position < gamewidth - paddlewidth) {
-            paddle.style.transform = `translateX(${position}px)`
-        } else {
-            currentX = gamewidth - paddlewidth
-            paddle.style.transform = `translateX(${currentX}px)`
-
-        }
-
+        rightPressed = true;
     } else if (event.key === 'ArrowLeft') {
-        if (currentX - paddleSpeed > 0) {
-            var position = currentX - paddleSpeed
-        } else {
-            position = 0
-        }
-        currentX = position
-        paddle.style.transform = `translateX(${position}px)`
+        leftPressed = true;
     }
-    if (!gameRunning) {
-        moveBallWithPaddle()
-    }
-
 })
+
+document.addEventListener('keyup', event => {
+    if (event.key === 'ArrowRight') {
+        rightPressed = false;
+    } else if (event.key === 'ArrowLeft') {
+        leftPressed = false;
+    }
+});
 
 let gameheight = gamearea.clientHeight
 let ballwidth = ball.offsetWidth
@@ -54,6 +42,8 @@ let paddleheight = paddle.clientHeight
 let ballX = 0
 let ballY = gameheight - paddleheight - ballwidth - 20
 let paddleTopEdge = paddle.offsetTop
+let timerStarted = false
+
 function moveBallWithPaddle() {
     ballX = currentX + paddlewidth / 2 - ballwidth / 2
     ball.style.transform = `translate(${ballX}px, ${ballY}px)`;
@@ -63,14 +53,20 @@ function moveBallWithPaddle() {
 moveBallWithPaddle()
 
 const brickRowCount = 5;
-const brickColumnCount = 8;
+let brickColumnCount;
 const brickWidth = 80;
 const brickHeight = 30;
 const brickPadding = 10;
 const brickOffsetTop = 40;
-const brickOffsetLeft = 40;
+let brickOffsetLeft;
+function calculateLayout() {
+    brickColumnCount = Math.floor(gamewidth / (brickWidth + brickPadding))
 
+    let totalbrickwidth = brickColumnCount * (brickWidth + brickPadding) - brickPadding;
 
+    brickOffsetLeft =  (gamewidth-totalbrickwidth)/2
+}
+calculateLayout();
 let bricks = [];
 
 function drawBricks() {
@@ -99,6 +95,29 @@ function drawBricks() {
 drawBricks()
 let animationID
 function gameloop() {
+    
+    if (rightPressed) {
+        if (currentX < gamewidth - paddlewidth) {
+            currentX += paddleSpeed;
+        } else {
+            currentX = gamewidth - paddlewidth; 
+        }
+    }
+    else if (leftPressed) {
+        if (currentX > 0) {
+            currentX -= paddleSpeed;
+        } else {
+            currentX = 0; 
+        }
+    }
+    
+    
+    paddle.style.transform = `translateX(${currentX}px)`;
+
+    
+    if (!gameRunning) {
+        moveBallWithPaddle();
+    }
     if (gameRunning) {
         ballX += ballSpeedX
         ballY += ballSpeedY
@@ -150,6 +169,10 @@ document.addEventListener('keydown', event => {
     if (event.code === 'Space' && !gameRunning && !isResetting) {
         gameRunning = true
         startmessege.style.display = 'none'
+        if (!timerStarted) {
+            timerInterval = setInterval(() => updateTimer(), 1000)
+            timerStarted = true
+        }
     }
 })
 
@@ -215,4 +238,21 @@ function resetBall() {
         isResetting = false
         gameRunning = true;
     }, 3000)
+}
+
+let timerDisplay = document.getElementById('timer')
+let timerSecond = 0
+let timerInterval;
+
+
+function updateTimer() {
+    if (gameRunning) {
+        timerSecond++
+    }
+
+    let minutes = Math.floor(timerSecond / 60);
+    let seconds = timerSecond % 60;
+    let formattedMin = minutes < 10 ? `0${minutes}` : minutes;
+    let formattedSec = seconds < 10 ? `0${seconds}` : seconds;
+    timerDisplay.innerText = `${formattedMin}:${formattedSec}`
 }
