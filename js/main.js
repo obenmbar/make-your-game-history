@@ -52,10 +52,10 @@ function moveBallWithPaddle() {
 
 moveBallWithPaddle()
 
-const brickRowCount = 5;
+const brickRowCount = 4;
 let brickColumnCount;
-const brickWidth = 80;
-const brickHeight = 30;
+const brickWidth = 100;
+const brickHeight = 40;
 const brickPadding = 10;
 const brickOffsetTop = 40;
 let brickOffsetLeft;
@@ -64,7 +64,7 @@ function calculateLayout() {
 
     let totalbrickwidth = brickColumnCount * (brickWidth + brickPadding) - brickPadding;
 
-    brickOffsetLeft =  (gamewidth-totalbrickwidth)/2
+    brickOffsetLeft = (gamewidth - totalbrickwidth) / 2
 }
 calculateLayout();
 let bricks = [];
@@ -95,26 +95,26 @@ function drawBricks() {
 drawBricks()
 let animationID
 function gameloop() {
-    
+
     if (rightPressed) {
         if (currentX < gamewidth - paddlewidth) {
             currentX += paddleSpeed;
         } else {
-            currentX = gamewidth - paddlewidth; 
+            currentX = gamewidth - paddlewidth;
         }
     }
     else if (leftPressed) {
         if (currentX > 0) {
             currentX -= paddleSpeed;
         } else {
-            currentX = 0; 
+            currentX = 0;
         }
     }
-    
-    
+
+
     paddle.style.transform = `translateX(${currentX}px)`;
 
-    
+
     if (!gameRunning) {
         moveBallWithPaddle();
     }
@@ -131,8 +131,8 @@ function gameloop() {
 
         if (ballY + ballwidth >= gameheight) {
             lives--
-            livesdisplay.innerText = '❤️'.repeat(lives);
 
+            displaylive()
             if (lives === 0) {
                 alert('Game Over')
                 document.location.reload()
@@ -217,8 +217,16 @@ function collisionDetection() {
     }
 }
 
-const livesdisplay = document.getElementById('lives')
+
 let lives = 3
+
+function displaylive() {
+    const livesdisplay = document.getElementById('lives')
+    const gokulive = '<img src="../images/lives.png" width="30" height="30" style="margin-right: 5px;">'
+    livesdisplay.innerHTML = gokulive.repeat(lives);
+
+}
+displaylive()
 function resetBall() {
     gameRunning = false
     isResetting = true
