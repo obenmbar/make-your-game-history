@@ -1,13 +1,16 @@
 export const state = {
     score: 0,
+    totalbrick: 0,
     lives: 3,
+    currentLevel: 1,
     ballX:0,
     ballY:0,
+    isPaused : false,
     gameRunning: false,
     isResetting: false,
     rightPressed: false,
     leftPressed: false,
-    timerSecond: 0,
+    timerSecond: 120,
     currentPaddleX: 0,
     bricks: [],
 };

@@ -5,41 +5,48 @@ import * as Physics from './physics.js';
 import * as Entities from './entities.js';
 import { PADDLE_SPEED } from './constants.js';
 
-const gameArea = document.getElementById('game-area');
-const paddle = document.getElementById('paddle');
-const ball = document.getElementById('ball');
-const brickContainer = document.getElementById('bricks-container');
-
-
+export const gameArea = document.getElementById('game-area');
+export const paddle = document.getElementById('paddle');
+export const ball = document.getElementById('ball');
+export const brickContainer = document.getElementById('bricks-container');
+export const conpausediv = document.getElementById('pause_continue_messege')
 Entities.initBricks(gameArea.clientWidth, brickContainer);
 Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
 UI.displayLives();
+UI.updatelevel()
 
 
-function handleResetSequence() {
+export function handleResetSequence(isNewLevel = false) {
     state.gameRunning = false;
     state.isResetting = true;
- 
-    Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
-    
 
-    UI.showMessage("Ready? 3...");
-    
+    Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
+
+    if (isNewLevel) {
+        UI.showMessage(`level:${state.currentLevel}`);
+    } else {
+        UI.showMessage(`READY?`);
+    }
+
     setTimeout(() => {
-        UI.showMessage("Set... 2...");
+        UI.showMessage("3...");
     }, 1000);
 
     setTimeout(() => {
-        UI.showMessage("Go! 1...");
+        UI.showMessage("2...");
     }, 2000);
+
+    setTimeout(() => {
+        UI.showMessage("1...");
+    }, 3000);
 
     setTimeout(() => {
         UI.hideMessage();
         state.gameRunning = true;
-        state.isResetting = false; 
+        state.isResetting = false;
 
-        state.ballSpeedY = -Math.abs(state.ballSpeedY); 
-    }, 3000);
+        state.ballSpeedY = -Math.abs(state.ballSpeedY);
+    }, 4000);
 }
 
 
@@ -51,9 +58,24 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') state.rightPressed = true;
     if (e.key === 'ArrowLeft') state.leftPressed = true;
 
-    if (e.code === 'Space' && !state.gameRunning && !state.isResetting) {
+    if (e.code === 'Space') {
 
-        handleResetSequence();
+        if (!state.gameRunning && !state.isResetting) {
+            handleResetSequence(true);
+            conpausediv.style.display = 'block'
+            conpausediv.innerText = 'Press Space to Pause'
+        } else {
+            state.isPaused = !state.isPaused
+
+            console.log(state.isPaused)
+            if (state.isPaused) {
+                conpausediv.innerText = 'Press Space to Continue'
+            } else {
+                conpausediv.innerText = 'Press Space to Pause'
+                requestAnimationFrame(gameLoop())
+            }
+        }
+
     }
 });
 
@@ -71,7 +93,9 @@ window.addEventListener('resize', () => {
 
 
 function gameLoop() {
-    
+    if (state.isPaused) {
+        return;
+    }
 
     if (!state.isResetting) {
         if (state.rightPressed && state.currentPaddleX < gameArea.clientWidth - paddle.offsetWidth) {
@@ -87,13 +111,19 @@ function gameLoop() {
         ball.style.transform = `translate(${state.ballX}px, ${state.ballY}px)`;
     }
 
-   
+
     if (state.gameRunning) {
         state.ballX += state.ballSpeedX;
         state.ballY += state.ballSpeedY;
 
-        
+
         if (state.ballX + ball.offsetWidth >= gameArea.clientWidth || state.ballX <= 0) {
+            if (state.ballX <= 0) {
+                state.ballX = 0;
+            } else {
+                state.ballX = gameArea.clientWidth - ball.offsetWidth
+            }
+
             state.ballSpeedX *= -1;
         }
         if (state.ballY <= 0) {
@@ -111,9 +141,12 @@ function gameLoop() {
                 alert('Game Over 😢');
                 document.location.reload();
             } else {
-            
-                handleResetSequence(); 
+
+                handleResetSequence();
             }
+        } else if (state.timerSecond === 0) {
+            alert('Game Over 😢');
+            document.location.reload();
         }
 
         ball.style.transform = `translate(${state.ballX}px, ${state.ballY}px)`;
