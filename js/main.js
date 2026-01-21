@@ -1,190 +1,144 @@
 
-import { state } from './gameState.js';
-import * as UI from './ui.js';
-import * as Physics from './physics.js';
-import * as Entities from './entities.js';
-import { PADDLE_SPEED, STORY } from './constants.js';
-
-export const gameArea = document.getElementById('game-area');
-export const paddle = document.getElementById('paddle');
-export const ball = document.getElementById('ball');
-export const brickContainer = document.getElementById('bricks-container');
-export const conpausediv = document.getElementById('pause_continue_messege')
-
-Entities.initBricks(gameArea.clientWidth, brickContainer);
-Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
-UI.displayLives();
-UI.updatelevel()
-
-window.onload = () => {
-    UI.showModal(
-        STORY.INTRO.title,
-        STORY.INTRO.text,
-        STORY.INTRO.btn,
-        () => {
-         UI.modal.style.display = 'none'
-          state.showstory = true
-        }
-    );
-};
 
 
-export function handleResetSequence(isNewLevel = false) {
-    state.gameRunning = false;
-    state.isResetting = true;
+import { state, } from './gameState.js';
 
-    Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
+import { BRICK_WIDTH, BRICK_HEIGHT, BRICK_ROW_COUNT, STORY } from './constants.js';
+import { updateScore, updatelevel, showModal } from './ui.js';
+import { initBricks, resetPositions } from './entities.js';
+import { handleResetSequence } from './main.js'
+const gameArea = document.getElementById('game-area');
+const brickContainer = document.getElementById('bricks-container');
+const ball = document.getElementById('ball');
+const paddle = document.getElementById('paddle');
+const startmessege =  document.getElementById('start-message')
+export function detectCollision(ballWidth) {
 
-    if (isNewLevel) {
-        UI.showMessage(`level:${state.currentLevel}`);
-    } else {
-        UI.showMessage(`READY?`);
-    }
-
-    setTimeout(() => {
-        UI.showMessage("3...");
-    }, 1000);
-
-    setTimeout(() => {
-        UI.showMessage("2...");
-    }, 2000);
-
-    setTimeout(() => {
-        UI.showMessage("1...");
-    }, 3000);
-
-    setTimeout(() => {
-        UI.hideMessage();
-        state.gameRunning = true;
-        state.isResetting = false;
-
-        state.ballSpeedY = -Math.abs(state.ballSpeedY);
-    }, 4000);
-}
+    for (let c = 0; c < state.brickColumnCount; c++) {
+        for (let r = 0; r < BRICK_ROW_COUNT; r++) {
 
 
-
-document.addEventListener('keydown', (e) => {
-
-    if (state.isResetting) return;
-    if(!state.showstory)return;
-
-    if (e.key === 'ArrowRight' || e.code === 'KeyF') state.rightPressed = true;
-    if (e.key === 'ArrowLeft' || e.code === 'KeyS') state.leftPressed = true;
-
-    if (e.code === 'Space') {
-
-        if (!state.gameRunning && !state.isResetting && state.showstory) {
-            handleResetSequence(true);
-            conpausediv.style.display = 'block'
-            conpausediv.innerText = 'Press Space to Pause'
-        } else {
-            state.isPaused = !state.isPaused
-
-            if (state.isPaused && state.showstory) {
-                conpausediv.innerText = 'Press Space to Continue'
-            } else if(state.showstory) {
-                conpausediv.innerText = 'Press Space to Pause'
-
-            }
-        }
-
-    }
-});
-
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowRight' || e.code === 'KeyF') state.rightPressed = false;
-    if (e.key === 'ArrowLeft' || e.code === 'KeyS') state.leftPressed = false;
-});
-
-window.addEventListener('resize', () => {
-    if (!state.gameRunning) {
-        Entities.initBricks(gameArea.clientWidth, brickContainer);
-        Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
-    }
-});
+            let b = state.bricks[c][r];
 
 
-function gameLoop() {
-    if (!state.isPaused) {
+            if (b.status > 0) {
+
+                if (
+                    state.ballX + ballWidth > b.x &&
+                    state.ballX < b.x + BRICK_WIDTH &&
+                    state.ballY + ballWidth > b.y &&
+                    state.ballY < b.y + BRICK_HEIGHT
+                ) {
+
+                    let overlapLeft = (state.ballX + ballWidth) - b.x;
+                    let overlapRight = (b.x + BRICK_WIDTH) - state.ballX;
+                    let overlapTop = (state.ballY + ballWidth) - b.y;
+                    let overlapBottom = (b.y + BRICK_HEIGHT) - state.ballY;
 
 
-        if (!state.isResetting) {
-            if (state.rightPressed && state.currentPaddleX < gameArea.clientWidth - paddle.offsetWidth) {
-                state.currentPaddleX += PADDLE_SPEED;
-            } else if (state.leftPressed && state.currentPaddleX > 0) {
-                state.currentPaddleX -= PADDLE_SPEED;
-            }
-            paddle.style.transform = `translateX(${state.currentPaddleX}px)`;
-        }
-
-        if (!state.gameRunning) {
-            state.ballX = state.currentPaddleX + (paddle.offsetWidth / 2) - (ball.offsetWidth / 2);
-            ball.style.transform = `translate(${state.ballX}px, ${state.ballY}px)`;
-        }
-
-
-        if (state.gameRunning) {
-            state.ballX += state.ballSpeedX;
-            state.ballY += state.ballSpeedY;
-
-
-            if (state.ballX + ball.offsetWidth >= gameArea.clientWidth || state.ballX <= 0) {
-                if (state.ballX <= 0) {
-                    state.ballX = 0;
-                } else {
-                    state.ballX = gameArea.clientWidth - ball.offsetWidth
-                }
-
-                state.ballSpeedX *= -1;
-            }
-            if (state.ballY <= 0) {
-                state.ballSpeedY *= -1;
-            }
-
-            Physics.handleBallPaddleCollision(paddle.offsetTop, state.currentPaddleX, paddle.offsetWidth, ball.offsetWidth);
-            Physics.detectCollision(ball.offsetWidth);
-
-            if (state.ballY + ball.offsetWidth >= gameArea.clientHeight) {
-                state.lives--;
-                UI.displayLives();
-
-                if (state.lives === 0) {
-                    state.gameRunning = false,
-                    state.showstory = false
-                        UI.showModal(
-                              STORY.LOSE.title,
-                              STORY.LOSE.text,
-                              STORY.LOSE.btn,
-                        ()=>{
-                            document.location.reload()
-                            state.showstory = true
-                        }
-                        );
-                } else {
-
-                    handleResetSequence();
-                }
-            } else if (state.timerSecond === 0) {
-                state.gameRunning = false;
-                state.showstory= false
-
-                UI.showModal(
-                   STORY.TIMEOUT.title,
-                   STORY.TIMEOUT.text,
-                   STORY.TIMEOUT.btn,
-                    () => {
-                        document.location.reload()
-                        state.showstory = true
+                    if (overlapLeft < overlapBottom && overlapLeft < overlapRight && overlapLeft < overlapTop) {
+                        state.ballSpeedX = -Math.abs(state.ballSpeedX);
+                    } else if (overlapRight < overlapTop && overlapRight < overlapBottom && overlapRight < overlapLeft) {
+                        state.ballSpeedX = Math.abs(state.ballSpeedX);
+                    } else {
+                        state.ballSpeedY *= -1;
                     }
-                );
-            }
 
-            ball.style.transform = `translate(${state.ballX}px, ${state.ballY}px)`;
+
+                    b.status--;
+
+
+                    const brickElement = b.element
+                    if (brickElement) {
+                        if (b.status === 0) {
+                            brickElement.style.display = 'none';
+                            state.totalbrick++
+                        } else if (b.status === 1) {
+                            brickElement.className = 'brick'
+                        } else {
+                            brickElement.className = 'brick-metal'
+                        }
+                    }
+
+
+                    state.score++;
+                    updateScore();
+
+                    const totalBricks = state.brickColumnCount * BRICK_ROW_COUNT;
+                    if (totalBricks === state.totalbrick) {
+                        state.gameRunning = false;
+                        state.showstory = false;
+                        state.totalbrick = 0;
+                      
+                            if (state.currentLevel < 3) {
+
+                                state.currentLevel++;
+                                updatelevel();
+
+                                let baseSpeed = Math.abs(state.ballSpeedY) * 1.2;
+                                state.ballSpeedY = -baseSpeed;
+                                state.ballSpeedX *= 1.2;
+
+                                if (state.currentLevel === 2) state.timerSecond = 260;
+                                if (state.currentLevel === 3) state.timerSecond = 320;
+
+                                initBricks(gameArea.clientWidth, brickContainer);
+                                resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
+
+                                let nextStory;
+                                if (state.currentLevel === 2) nextStory = STORY.LEVEL2;
+                                else if (state.currentLevel === 3) nextStory = STORY.LEVEL3;
+
+                                showModal(
+                                    nextStory.title,
+                                    nextStory.text,
+                                    nextStory.btn,
+                                    () => {
+                                        state.showstory = true;
+
+
+                                        startmessege.style.display = 'block';
+                                        startmessege.innerText = `Press Space to Start Level ${state.currentLevel}` 
+                                    }
+                                );
+
+                            } else {
+                                showModal(
+                                    STORY.WIN.title,
+                                    STORY.WIN.text,
+                                    STORY.WIN.btn,
+                                    () => document.location.reload()
+                                );
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
         }
     }
-    requestAnimationFrame(gameLoop);
-}
 
-setInterval(UI.updateTimer, 1000);
-requestAnimationFrame(gameLoop)
+
+    export function handleBallPaddleCollision(paddleTopEdge, currentPaddleX, paddleWidth, ballWidth) {
+
+
+        if (
+            state.ballY + ballWidth >= paddleTopEdge &&
+            state.ballX + ballWidth >= currentPaddleX &&
+            state.ballX <= currentPaddleX + paddleWidth
+        ) {
+
+            state.ballSpeedY = -Math.abs(state.ballSpeedY);
+
+
+            let paddleCenter = currentPaddleX + (paddleWidth / 2);
+            let ballCenter = state.ballX + (ballWidth / 2);
+            let impactPoint = ballCenter - paddleCenter;
+
+
+            state.ballSpeedX = impactPoint * 0.2;
+
+            if (state.ballSpeedX > 10) state.ballSpeedX = 10;
+            if (state.ballSpeedX < -10) state.ballSpeedX = -10;
+        }
+    }
