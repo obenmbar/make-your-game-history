@@ -55,8 +55,8 @@ document.addEventListener('keydown', (e) => {
 
     if (state.isResetting) return;
 
-    if (e.key === 'ArrowRight') state.rightPressed = true;
-    if (e.key === 'ArrowLeft') state.leftPressed = true;
+    if (e.key === 'ArrowRight' || e.code === 'KeyF') state.rightPressed = true;
+    if (e.key === 'ArrowLeft' || e.code === 'KeyS') state.leftPressed = true;
 
     if (e.code === 'Space') {
 
@@ -67,12 +67,12 @@ document.addEventListener('keydown', (e) => {
         } else {
             state.isPaused = !state.isPaused
 
-            console.log(state.isPaused)
+         
             if (state.isPaused) {
                 conpausediv.innerText = 'Press Space to Continue'
             } else {
                 conpausediv.innerText = 'Press Space to Pause'
-                requestAnimationFrame(gameLoop())
+             
             }
         }
 
@@ -80,8 +80,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowRight') state.rightPressed = false;
-    if (e.key === 'ArrowLeft') state.leftPressed = false;
+    if (e.key === 'ArrowRight' || e.code === 'KeyF') state.rightPressed = false;
+    if (e.key === 'ArrowLeft' || e.code === 'KeyS') state.leftPressed = false;
 });
 
 window.addEventListener('resize', () => {
@@ -93,9 +93,8 @@ window.addEventListener('resize', () => {
 
 
 function gameLoop() {
-    if (state.isPaused) {
-        return;
-    }
+    if (!state.isPaused) {
+        
 
     if (!state.isResetting) {
         if (state.rightPressed && state.currentPaddleX < gameArea.clientWidth - paddle.offsetWidth) {
@@ -138,22 +137,30 @@ function gameLoop() {
             UI.displayLives();
 
             if (state.lives === 0) {
-                alert('Game Over 😢');
-                document.location.reload();
+                state.gameRunning = false,
+                    UI.showModal('GAME OVER',
+                        "Hard luck! Frieza was too strong.",
+                        "TRY AGAIN",
+                        () => document.location.reload())
             } else {
 
                 handleResetSequence();
             }
         } else if (state.timerSecond === 0) {
-            alert('Game Over 😢');
-            document.location.reload();
+            state.gameRunning = false;
+            UI.showModal(
+                "TIME OUT!",
+                "You ran out of time! Frieza escaped.",
+                "TRY AGAIN",
+                () => document.location.reload()
+            );
         }
 
         ball.style.transform = `translate(${state.ballX}px, ${state.ballY}px)`;
     }
-
+}
     requestAnimationFrame(gameLoop);
 }
 
 setInterval(UI.updateTimer, 1000);
-gameLoop();
+requestAnimationFrame(gameLoop)
