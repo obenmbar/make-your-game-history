@@ -2,7 +2,7 @@ export const state = {
     score: 0,
     totalbrick: 0,
     lives: 3,
-    currentLevel: 1,
+    currentLevel: 3,
     ballX:0,
     ballY:0,
     isPaused : false,
