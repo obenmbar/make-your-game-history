@@ -1,14 +1,14 @@
 import { state } from './gameState.js';
 
-const timerDisplay = document.getElementById('timer');
-const livesDisplay = document.getElementById('lives');
-const scoreDisplay = document.getElementById('score');
-const startMessage = document.getElementById('start-message');
-const leveldisplay = document.getElementById('level')
-const modal = document.getElementById('game-modal')
-const modalTitle = document.getElementById('modal-title')
-const modalText = document.getElementById('modal-text');
-const modalBtn = document.getElementById('modal-btn');
+export const livesDisplay = document.getElementById('lives');
+export const timerDisplay = document.getElementById('timer');
+export const scoreDisplay = document.getElementById('score');
+export const startMessage = document.getElementById('start-message');
+export const leveldisplay = document.getElementById('level')
+export const modal = document.getElementById('game-modal')
+export const modalTitle = document.getElementById('modal-title')
+export const modalText = document.getElementById('modal-text');
+export const modalBtn = document.getElementById('modal-btn');
 
 export function updateTimer() {
     if (state.gameRunning && !state.isPaused) {
@@ -50,10 +50,10 @@ export function showModal(title, message, btnText, actionCallback) {
     modal.style.display = 'flex'
     modalBtn.onclick = function () {
         modal.style.display = 'none'
-        if (actionCallback) {
-            actionCallback()
-        } else {
-            document.location.reload
-        }
+             if (actionCallback){
+                actionCallback()
+             }
+            
+      
     }
 }
