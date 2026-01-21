@@ -7,6 +7,7 @@
     <title>Breakout Game</title>
     <link rel="stylesheet" href="../style/style.css">
     <link rel="icon" href="../images/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
@@ -16,18 +17,24 @@
         <div id="game-stats">
             <div id="score-board">Score: <span id="score">0</span></div>
 
-           
+
             <div id="level"></div>
 
             <div id="timer">00:00</div>
-             <div id="lives"></div>
+            <div id="lives"></div>
         </div>
 
 
         <div id="start-message">Press <strong>SPACE</strong> to Start</div>
 
-        <div id="bricks-container">
+        <div id="bricks-container"> </div>
 
+        <div id="game-modal" class="modal">
+            <div class="modal-content">
+                <h2 id="modal-title">GAME OVER</h2>
+                <p id="modal-text">You lost all your lives!</p>
+                <button id="modal-btn">TRY AGAIN</button>
+            </div>
         </div>
 
         <div id="paddle"></div>
@@ -37,6 +44,24 @@
     </div>
     <div id="pause_continue_messege"></div>
 
+
+    <div id="footer-socials">
+        <p>Created by <span class="dev-name">Othmane Benmbarek</span></p>
+
+        <div class="icons">
+            <a href="linkedin.com/in/othmane-benmbarek-a014163a5" target="_blank">
+                <i class="fab fa-linkedin"></i>
+            </a>
+
+            <a href="https://github.com/obenmbar" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+
+            <a href="https://www.instagram.com/othmanbenmbark?igsh=eGswNTg5dDZqd2o2" target="_blank">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+    </div>
 
     <script type='module' src="../js/main.js"></script>
 </body>
