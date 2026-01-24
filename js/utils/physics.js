@@ -6,7 +6,7 @@ import { state, } from './gameState.js';
 import { BRICK_WIDTH, BRICK_HEIGHT, BRICK_ROW_COUNT, STORY } from './constants.js';
 import { updateScore, updatelevel, showModal } from './ui.js';
 import { initBricks, resetPositions } from './entities.js';
-import { handleResetSequence } from './main.js'
+
 const gameArea = document.getElementById('game-area');
 const brickContainer = document.getElementById('bricks-container');
 const ball = document.getElementById('ball');

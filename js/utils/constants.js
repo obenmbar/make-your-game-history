@@ -1,4 +1,4 @@
-export const PADDLE_SPEED = 8;
+export const PADDLE_SPEED = 10;
 export const BALL_SPEED_X = 4;
 export const BALL_SPEED_Y = -4;
 export const BRICK_ROW_COUNT = 4 ;

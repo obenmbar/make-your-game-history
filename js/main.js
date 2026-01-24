@@ -1,144 +1,190 @@
 
+import { state } from './utils/gameState.js';
+import * as UI from './utils/ui.js';
+import * as Physics from './utils/physics.js';
+import * as Entities from './utils/entities.js';
+import { PADDLE_SPEED, STORY } from './utils/constants.js';
+
+export const gameArea = document.getElementById('game-area');
+export const paddle = document.getElementById('paddle');
+export const ball = document.getElementById('ball');
+export const brickContainer = document.getElementById('bricks-container');
+export const conpausediv = document.getElementById('pause_continue_messege')
+
+Entities.initBricks(gameArea.clientWidth, brickContainer);
+Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
+UI.displayLives();
+UI.updatelevel()
+
+window.onload = () => {
+    UI.showModal(
+        STORY.INTRO.title,
+        STORY.INTRO.text,
+        STORY.INTRO.btn,
+        () => {
+         UI.modal.style.display = 'none'
+          state.showstory = true
+        }
+    );
+};
 
 
-import { state, } from './gameState.js';
+export function handleResetSequence(isNewLevel = false) {
+    state.gameRunning = false;
+    state.isResetting = true;
 
-import { BRICK_WIDTH, BRICK_HEIGHT, BRICK_ROW_COUNT, STORY } from './constants.js';
-import { updateScore, updatelevel, showModal } from './ui.js';
-import { initBricks, resetPositions } from './entities.js';
-import { handleResetSequence } from './main.js'
-const gameArea = document.getElementById('game-area');
-const brickContainer = document.getElementById('bricks-container');
-const ball = document.getElementById('ball');
-const paddle = document.getElementById('paddle');
-const startmessege =  document.getElementById('start-message')
-export function detectCollision(ballWidth) {
+    Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
 
-    for (let c = 0; c < state.brickColumnCount; c++) {
-        for (let r = 0; r < BRICK_ROW_COUNT; r++) {
+    if (isNewLevel) {
+        UI.showMessage(`level:${state.currentLevel}`);
+    } else {
+        UI.showMessage(`READY?`);
+    }
 
+    setTimeout(() => {
+        UI.showMessage("3...");
+    }, 1000);
 
-            let b = state.bricks[c][r];
+    setTimeout(() => {
+        UI.showMessage("2...");
+    }, 2000);
 
+    setTimeout(() => {
+        UI.showMessage("1...");
+    }, 3000);
 
-            if (b.status > 0) {
+    setTimeout(() => {
+        UI.hideMessage();
+        state.gameRunning = true;
+        state.isResetting = false;
 
-                if (
-                    state.ballX + ballWidth > b.x &&
-                    state.ballX < b.x + BRICK_WIDTH &&
-                    state.ballY + ballWidth > b.y &&
-                    state.ballY < b.y + BRICK_HEIGHT
-                ) {
-
-                    let overlapLeft = (state.ballX + ballWidth) - b.x;
-                    let overlapRight = (b.x + BRICK_WIDTH) - state.ballX;
-                    let overlapTop = (state.ballY + ballWidth) - b.y;
-                    let overlapBottom = (b.y + BRICK_HEIGHT) - state.ballY;
-
-
-                    if (overlapLeft < overlapBottom && overlapLeft < overlapRight && overlapLeft < overlapTop) {
-                        state.ballSpeedX = -Math.abs(state.ballSpeedX);
-                    } else if (overlapRight < overlapTop && overlapRight < overlapBottom && overlapRight < overlapLeft) {
-                        state.ballSpeedX = Math.abs(state.ballSpeedX);
-                    } else {
-                        state.ballSpeedY *= -1;
-                    }
+        state.ballSpeedY = -Math.abs(state.ballSpeedY);
+    }, 4000);
+}
 
 
-                    b.status--;
 
+document.addEventListener('keydown', (e) => {
 
-                    const brickElement = b.element
-                    if (brickElement) {
-                        if (b.status === 0) {
-                            brickElement.style.display = 'none';
-                            state.totalbrick++
-                        } else if (b.status === 1) {
-                            brickElement.className = 'brick'
-                        } else {
-                            brickElement.className = 'brick-metal'
-                        }
-                    }
+    if (state.isResetting) return;
+    if(!state.showstory)return;
 
+    if (e.key === 'ArrowRight' || e.code === 'KeyD') state.rightPressed = true;
+    if (e.key === 'ArrowLeft' || e.code === 'KeyA') state.leftPressed = true;
 
-                    state.score++;
-                    updateScore();
+    if (e.code === 'Space') {
 
-                    const totalBricks = state.brickColumnCount * BRICK_ROW_COUNT;
-                    if (totalBricks === state.totalbrick) {
-                        state.gameRunning = false;
-                        state.showstory = false;
-                        state.totalbrick = 0;
-                      
-                            if (state.currentLevel < 3) {
+        if (!state.gameRunning && !state.isResetting && state.showstory) {
+            handleResetSequence(true);
+            conpausediv.style.display = 'block'
+            conpausediv.innerText = 'Press Space to Pause'
+        } else {
+            state.isPaused = !state.isPaused
 
-                                state.currentLevel++;
-                                updatelevel();
+            if (state.isPaused && state.showstory) {
+                conpausediv.innerText = 'Press Space to Continue'
+            } else if(state.showstory) {
+                conpausediv.innerText = 'Press Space to Pause'
 
-                                let baseSpeed = Math.abs(state.ballSpeedY) * 1.2;
-                                state.ballSpeedY = -baseSpeed;
-                                state.ballSpeedX *= 1.2;
-
-                                if (state.currentLevel === 2) state.timerSecond = 260;
-                                if (state.currentLevel === 3) state.timerSecond = 320;
-
-                                initBricks(gameArea.clientWidth, brickContainer);
-                                resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
-
-                                let nextStory;
-                                if (state.currentLevel === 2) nextStory = STORY.LEVEL2;
-                                else if (state.currentLevel === 3) nextStory = STORY.LEVEL3;
-
-                                showModal(
-                                    nextStory.title,
-                                    nextStory.text,
-                                    nextStory.btn,
-                                    () => {
-                                        state.showstory = true;
-
-
-                                        startmessege.style.display = 'block';
-                                        startmessege.innerText = `Press Space to Start Level ${state.currentLevel}` 
-                                    }
-                                );
-
-                            } else {
-                                showModal(
-                                    STORY.WIN.title,
-                                    STORY.WIN.text,
-                                    STORY.WIN.btn,
-                                    () => document.location.reload()
-                                );
-                            }
-                        }
-                        return;
-                    }
-                }
             }
         }
+
     }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowRight' || e.code === 'KeyD') state.rightPressed = false;
+    if (e.key === 'ArrowLeft' || e.code === 'KeyA') state.leftPressed = false;
+});
+
+window.addEventListener('resize', () => {
+    if (!state.gameRunning) {
+        Entities.initBricks(gameArea.clientWidth, brickContainer);
+        Entities.resetPositions(ball, paddle, gameArea.clientWidth, gameArea.clientHeight);
+    }
+});
 
 
-    export function handleBallPaddleCollision(paddleTopEdge, currentPaddleX, paddleWidth, ballWidth) {
+function gameLoop() {
+    if (!state.isPaused) {
 
 
-        if (
-            state.ballY + ballWidth >= paddleTopEdge &&
-            state.ballX + ballWidth >= currentPaddleX &&
-            state.ballX <= currentPaddleX + paddleWidth
-        ) {
+        if (!state.isResetting) {
+            if (state.rightPressed && state.currentPaddleX < gameArea.clientWidth - paddle.offsetWidth) {
+                state.currentPaddleX += PADDLE_SPEED;
+            } else if (state.leftPressed && state.currentPaddleX > 0) {
+                state.currentPaddleX -= PADDLE_SPEED;
+            }
+            paddle.style.transform = `translateX(${state.currentPaddleX}px)`;
+        }
 
-            state.ballSpeedY = -Math.abs(state.ballSpeedY);
+        if (!state.gameRunning) {
+            state.ballX = state.currentPaddleX + (paddle.offsetWidth / 2) - (ball.offsetWidth / 2);
+            ball.style.transform = `translate(${state.ballX}px, ${state.ballY}px)`;
+        }
 
 
-            let paddleCenter = currentPaddleX + (paddleWidth / 2);
-            let ballCenter = state.ballX + (ballWidth / 2);
-            let impactPoint = ballCenter - paddleCenter;
+        if (state.gameRunning) {
+            state.ballX += state.ballSpeedX;
+            state.ballY += state.ballSpeedY;
 
 
-            state.ballSpeedX = impactPoint * 0.2;
+            if (state.ballX + ball.offsetWidth >= gameArea.clientWidth || state.ballX <= 0) {
+                if (state.ballX <= 0) {
+                    state.ballX = 0;
+                } else {
+                    state.ballX = gameArea.clientWidth - ball.offsetWidth
+                }
 
-            if (state.ballSpeedX > 10) state.ballSpeedX = 10;
-            if (state.ballSpeedX < -10) state.ballSpeedX = -10;
+                state.ballSpeedX *= -1;
+            }
+            if (state.ballY <= 0) {
+                state.ballSpeedY *= -1;
+            }
+
+            Physics.handleBallPaddleCollision(paddle.offsetTop, state.currentPaddleX, paddle.offsetWidth, ball.offsetWidth);
+            Physics.detectCollision(ball.offsetWidth);
+
+            if (state.ballY + ball.offsetWidth >= gameArea.clientHeight) {
+                state.lives--;
+                UI.displayLives();
+
+                if (state.lives === 0) {
+                    state.gameRunning = false,
+                    state.showstory = false
+                        UI.showModal(
+                              STORY.LOSE.title,
+                              STORY.LOSE.text,
+                              STORY.LOSE.btn,
+                        ()=>{
+                            document.location.reload()
+                 
+                        }
+                        );
+                } else {
+
+                    handleResetSequence();
+                }
+            } else if (state.timerSecond === 0) {
+                state.gameRunning = false;
+                state.showstory= false
+
+                UI.showModal(
+                   STORY.TIMEOUT.title,
+                   STORY.TIMEOUT.text,
+                   STORY.TIMEOUT.btn,
+                    () => {
+                        document.location.reload()
+              
+                    }
+                );
+            }
+
+            ball.style.transform = `translate(${state.ballX}px, ${state.ballY}px)`;
         }
     }
+    requestAnimationFrame(gameLoop);
+}
+
+setInterval(UI.updateTimer, 1000);
+requestAnimationFrame(gameLoop)
