@@ -76,8 +76,16 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight' || e.code === 'KeyD') state.rightPressed = true;
     if (e.key === 'ArrowLeft' || e.code === 'KeyA') state.leftPressed = true;
 
-    if (e.code === 'Space') {
-        playMusic()
+    if (e.code === 'Space')  state.spacedown = true
+    
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowRight' || e.code === 'KeyD') state.rightPressed = false;
+    if (e.key === 'ArrowLeft' || e.code === 'KeyA') state.leftPressed = false;
+    if (e.code ===  'Space'&& state.spacedown === true) {
+        state.spacedown = false 
+          playMusic()
         if (!state.gameRunning && !state.isResetting && state.showstory) {
             handleResetSequence(true);
             conpausediv.style.display = 'block'
@@ -94,13 +102,7 @@ document.addEventListener('keydown', (e) => {
 
             }
         }
-
     }
-});
-
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowRight' || e.code === 'KeyD') state.rightPressed = false;
-    if (e.key === 'ArrowLeft' || e.code === 'KeyA') state.leftPressed = false;
 });
 
 window.addEventListener('resize', () => {
